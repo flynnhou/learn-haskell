@@ -239,28 +239,147 @@ ghci> parenthesizeWords "We love Haskell"
 
 ### `parenthesizeWord` Alternatives
 
+#### Lambda Function
+
 ```bash
 ghci> parenthesizeWord = \s -> "(" ++ s ++ ")"
 ghci> parenthesizeWord "We"
 "(We)"
 ghci> :t parenthesizeWord
-parenthesizeWord :: [Char] -> [Char]
+parenthesizeWord :: [Char] -> [Char]  # [Char]: a list of char is string
 ghci> 
+```
+
+#### Argument Function
+
+```bash
 ghci> parenthesizeWord s = "(" ++ s ++ ")"
 ghci> parenthesizeWord "love"
 "(love)"
 ghci> :t parenthesizeWord
 parenthesizeWord :: [Char] -> [Char]
 ghci>
-ghci> parenthesizeWord = ("(" ++) . (++ ")")
+```
+
+#### Section
+
+```bash
+ghci> parenthesizeWord = ("(" ++) . (++ ")")  # recall: function composition
 ghci> parenthesizeWord "functions"
 "(functions)"
 ghci> :t parenthesizeWord
 parenthesizeWord :: [Char] -> [Char]
-ghci> :t ("(" ++)             -- "section": prepend string left parenthesis to an argument, aka "partial application"
+ghci> :t ("(" ++)             # "section": prepend string left parenthesis to an argument, aka a type of "partial application"
 ("(" ++) :: [Char] -> [Char]
-ghci> :t (++ ")")             -- "section": append string right parenthesis to an argument, aka "partial application"
+ghci> :t (++ ")")             # "section": append string right parenthesis to an argument, aka a type of "partial application"
 (++ ")") :: [Char] -> [Char]
+```
+
+### Infix Function Examples
+
+#### Argument Function
+
+```bash
+ghci> func x y = show x ++ show y
+ghci> :type func
+func :: (Show a1, Show a2) => a1 -> a2 -> [Char]
+```
+
+#### Infix Function
+
+```bash
+ghci> x `func` y = show x ++ show y
+ghci> :type func
+func :: (Show a1, Show a2) => a1 -> a2 -> [Char]
+```
+
+#### Compare Infix and Prefix Functions
+
+```bash
+ghci> func "aaa" "bbb"
+"\"aaa\"\"bbb\""
+ghci> "aaa" `func` "bbb"
+"\"aaa\"\"bbb\""
+```
+
+### Use Infix Function, Section Altogether
+
+```bash
+ghci> leftSection = (5 `func`)
+ghci> :type leftSection
+leftSection :: Show a2 => a2 -> [Char]
+ghci> leftSection "6"
+"5\"6\""
+ghci>
+ghci> rightSection = (`func` "five")
+ghci> :type rightSection
+rightSection :: Show a1 => a1 -> [Char]
+ghci> rightSection 6
+"6\"five\""
+```
+
+### Partial Application
+
+#### Argument Function
+
+- Saturated
+- Supply all n arguments
+
+```bash
+ghci> foo x y z = x ++ y ++ z
+ghci> foo "aaa" "bbb" "ccc"
+"aaabbbccc"
+ghci>
+```
+
+#### Partial Application
+
+- Supply lower than n arguments
+- In general, a function in n arguments applied to single argument will yield a function in n-1 arguments
+
+```bash
+ghci> foo x y z = x ++ y ++ z
+ghci> foo "aaa" "bbb" "ccc"
+"aaabbbccc"
+ghci> :type foo
+foo :: [a] -> [a] -> [a] -> [a]
+ghci> x = foo "aaa"
+ghci> :type x
+x :: [Char] -> [Char] -> [Char]
+ghci> y = x "bbb"
+ghci> :type y
+y :: [Char] -> [Char]
+ghci> z = y "ccc"
+ghci> :type z
+z :: [Char]
+ghci> z
+"aaabbbccc"
+```
+
+- At each stage, each partially applied function is a regular function. There are values that can be passed around.
+- Can also assign names to them
+
+```bash
+ghci> [1..10]
+[1,2,3,4,5,6,7,8,9,10]
+ghci> lessThanFive x = x < 5
+ghci> filter lessThanFive [1..10]
+[1,2,3,4]
+```
+
+```bash
+ghci> filter (\x -> x < 5) [1..10]
+[1,2,3,4]
+```
+
+```bash
+ghci> filter (<5) [1..10]
+[1,2,3,4]
+```
+
+```bash
+ghci> map (*2) $ filter (<5) [1..10]
+[2,4,6,8]
 ```
 
 ## References
